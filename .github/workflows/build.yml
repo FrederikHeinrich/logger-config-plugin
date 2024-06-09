@@ -21,9 +21,6 @@ jobs:
       - name: "Checkout"
         uses: "actions/checkout@v4"
 
-      - name: "Validate Gradle"
-        uses: "gradle/actions/wrapper-validation@v3"
-
       - name: "Setup JDK"
         uses: "actions/setup-java@v4"
         with:
@@ -34,12 +31,11 @@ jobs:
         uses: "gradle/actions/setup-gradle@v3"
 
       - name: "Build"
-        run: "./gradlew build"
-
+        run: "gradle build"
 
       - name: "determine status"
         run: |
-          if [ "$(./gradlew properties | awk '/^version:/ { print $2; }' | grep '\-SNAPSHOT')" ]; then
+          if [ "$(gradle properties | awk '/^version:/ { print $2; }' | grep '\-SNAPSHOT')" ]; then
             echo "STATUS=snapshot" >> $GITHUB_ENV
           else
             echo "STATUS=release" >> $GITHUB_ENV
@@ -47,13 +43,14 @@ jobs:
 
       - name: "publish snapshot"
         if: "${{ env.STATUS != 'release' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}"
-        run: ./gradlew publish
+        run: gradle publish
         env:
           ORG_GRADLE_PROJECT_jmpUsername: "${{ secrets.JMP_REPO_USER }}"
           ORG_GRADLE_PROJECT_jmpPassword: "${{ secrets.JMP_REPO_PASSWORD }}"
+
       - name: "publish release"
         if: "${{ env.STATUS == 'release' && github.event_name == 'release' }}"
-        run: ./gradlew publishPlugins
+        run: gradle publishPlugins
         env:
           ORG_GRADLE_PROJECT_pluginPortalApiKey: "${{ secrets.GRADLE_PLUGIN_PORTAL_KEY }}"
           ORG_GRADLE_PROJECT_pluginPortalApiSecret: "${{ secrets.GRADLE_PLUGIN_PORTAL_SECRET }}"
