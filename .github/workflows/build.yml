@@ -33,23 +33,24 @@ jobs:
       - name: "Build"
         run: "gradle build"
 
-      - name: "determine status"
+      - name: "Determine Status"
+        id: determine_status
         run: |
           if [ "$(gradle properties | awk '/^version:/ { print $2; }' | grep '\-SNAPSHOT')" ]; then
-            echo "STATUS=snapshot" >> $GITHUB_ENV
+            echo "status=snapshot" >> $GITHUB_ENV
           else
-            echo "STATUS=release" >> $GITHUB_ENV
+            echo "status=release" >> $GITHUB_ENV
           fi
 
-      - name: "publish snapshot"
-        if: "${{ env.STATUS != 'release' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}"
+      - name: "Publish Snapshot"
+        if: ${{ env.status != 'release' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
         run: gradle publish
         env:
           ORG_GRADLE_PROJECT_jmpUsername: "${{ secrets.JMP_REPO_USER }}"
           ORG_GRADLE_PROJECT_jmpPassword: "${{ secrets.JMP_REPO_PASSWORD }}"
 
-      - name: "publish release"
-        if: "${{ env.STATUS == 'release' && github.event_name == 'release' }}"
+      - name: "Publish Release"
+        if: ${{ env.status == 'release' && github.event_name == 'release' }}
         run: gradle publishPlugins
         env:
           ORG_GRADLE_PROJECT_pluginPortalApiKey: "${{ secrets.GRADLE_PLUGIN_PORTAL_KEY }}"
