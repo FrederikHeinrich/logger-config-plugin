@@ -42,18 +42,9 @@ jobs:
             echo "status=release" >> $GITHUB_ENV
           fi
 
-      - name: "Publish Snapshot"
-        if: ${{ env.status != 'release' && github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-        run: gradle publish
-        env:
-          ORG_GRADLE_PROJECT_jmpUsername: "${{ secrets.JMP_REPO_USER }}"
-          ORG_GRADLE_PROJECT_jmpPassword: "${{ secrets.JMP_REPO_PASSWORD }}"
-
-      - name: "Publish Release"
+      - name: "Publish"
         if: ${{ env.status == 'release' && github.event_name == 'release' }}
         run: gradle publishPlugins
         env:
           ORG_GRADLE_PROJECT_pluginPortalApiKey: "${{ secrets.GRADLE_PLUGIN_PORTAL_KEY }}"
           ORG_GRADLE_PROJECT_pluginPortalApiSecret: "${{ secrets.GRADLE_PLUGIN_PORTAL_SECRET }}"
-          ORG_GRADLE_PROJECT_signingKey: "${{ secrets.SIGNING_KEY }}"
-          ORG_GRADLE_PROJECT_signingPassword: "${{ secrets.SIGNING_PASSWORD }}"
